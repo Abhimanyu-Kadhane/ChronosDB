@@ -1,6 +1,7 @@
 // src/main/java/com/chronosdb/application/VersioningService.java
 package com.chronosdb.application;
 
+import com.chronosdb.engine.conflict.ConflictResolver;
 import com.chronosdb.engine.conflict.exception.ConflictDetectedException;
 import com.chronosdb.engine.conflict.model.ConflictRecord;
 import com.chronosdb.engine.conflict.ConflictEngine;
@@ -19,10 +20,23 @@ public class VersioningService {
 
     private final TemporalEngine temporalEngine;
     private final ConflictEngine conflictEngine;
+    private final ConflictResolver conflictResolver;
 
-    public VersioningService(TemporalEngine temporalEngine, ConflictEngine conflictEngine) {
+    public VersioningService(TemporalEngine temporalEngine,
+                             ConflictEngine conflictEngine,
+                             ConflictResolver conflictResolver) {
         this.temporalEngine = temporalEngine;
         this.conflictEngine = conflictEngine;
+        this.conflictResolver = conflictResolver;
+    }
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ,
+            noRollbackFor = ConflictDetectedException.class)
+    public VersionRecord resolveConflict(String conflictId,
+                                         String strategyName,
+                                         String resolvedBy,
+                                         String entityType) {
+        return conflictResolver.resolve(conflictId, strategyName, resolvedBy, entityType);
     }
 
     /**
