@@ -71,4 +71,11 @@ public interface VersionRepository {
      * Fetch a version by its exact ID.
      */
     Optional<VersionRecord> findById(String versionId);
+
+
+    /**
+     * Find all versions that share a conflict_id.
+     * Backed by idx_conflict index.
+     */
+    List<VersionRecord> findByConflictId(String conflictId);
 }

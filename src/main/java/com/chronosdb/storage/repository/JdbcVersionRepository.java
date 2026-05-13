@@ -226,4 +226,13 @@ public class JdbcVersionRepository implements VersionRepository {
         Timestamp ts = rs.getTimestamp(col);
         return ts != null ? ts.toInstant() : null;
     }
+
+    @Override
+    public List<VersionRecord> findByConflictId(String conflictId) {
+        return jdbc.query(
+                "SELECT * FROM entity_versions WHERE conflict_id = ? ORDER BY valid_from ASC",
+                ROW_MAPPER,
+                conflictId
+        );
+    }
 }

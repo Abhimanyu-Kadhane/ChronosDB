@@ -1,6 +1,7 @@
 // src/main/java/com/chronosdb/config/EngineConfig.java
 package com.chronosdb.config;
 
+import com.chronosdb.engine.conflict.ConflictEngine;
 import com.chronosdb.engine.temporal.ChecksumService;
 import com.chronosdb.engine.temporal.DagService;
 import com.chronosdb.engine.temporal.TemporalEngine;
@@ -27,9 +28,16 @@ public class EngineConfig {
     }
 
     @Bean
+    public ConflictEngine conflictEngine(VersionRepository versionRepository) {
+        return new ConflictEngine(versionRepository);
+    }
+
+    // Update temporalEngine bean to include conflictEngine:
+    @Bean
     public TemporalEngine temporalEngine(VersionRepository versionRepository,
                                          DagService dagService,
-                                         ChecksumService checksumService) {
-        return new TemporalEngine(versionRepository, dagService, checksumService);
+                                         ChecksumService checksumService,
+                                         ConflictEngine conflictEngine) {
+        return new TemporalEngine(versionRepository, dagService, checksumService, conflictEngine);
     }
 }

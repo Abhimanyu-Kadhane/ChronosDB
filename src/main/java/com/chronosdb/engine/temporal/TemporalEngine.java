@@ -1,6 +1,7 @@
 // src/main/java/com/chronosdb/engine/temporal/TemporalEngine.java
 package com.chronosdb.engine.temporal;
 
+import com.chronosdb.engine.conflict.ConflictEngine;
 import com.chronosdb.engine.temporal.exception.EntityNotFoundException;
 import com.chronosdb.engine.temporal.exception.StaleWriteException;
 import com.chronosdb.engine.temporal.model.WriteCommand;
@@ -23,12 +24,16 @@ public class TemporalEngine {
     private final DagService dagService;
     private final ChecksumService checksumService;
 
+    private final ConflictEngine conflictEngine;
+
     public TemporalEngine(VersionRepository versionRepository,
                           DagService dagService,
-                          ChecksumService checksumService) {
+                          ChecksumService checksumService,
+                          ConflictEngine conflictEngine) {
         this.versionRepository = versionRepository;
         this.dagService = dagService;
         this.checksumService = checksumService;
+        this.conflictEngine = conflictEngine;
     }
 
     // ------------------------------------------------------------------
@@ -105,6 +110,8 @@ public class TemporalEngine {
         );
 
         versionRepository.insert(newVersion);
+        conflictEngine.checkAndRegister(newVersion);
+
         return newVersion;
     }
 
