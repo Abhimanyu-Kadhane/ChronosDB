@@ -5,6 +5,8 @@ import com.chronosdb.engine.conflict.ConflictResolver;
 import com.chronosdb.engine.conflict.exception.ConflictDetectedException;
 import com.chronosdb.engine.conflict.model.ConflictRecord;
 import com.chronosdb.engine.conflict.ConflictEngine;
+import com.chronosdb.engine.replay.ReplayEngine;
+import com.chronosdb.engine.replay.model.ReplayResult;
 import com.chronosdb.engine.temporal.TemporalEngine;
 import com.chronosdb.engine.temporal.model.WriteCommand;
 import com.chronosdb.storage.model.VersionRecord;
@@ -22,13 +24,19 @@ public class VersioningService {
     private final ConflictEngine conflictEngine;
     private final ConflictResolver conflictResolver;
 
+    private final ReplayEngine replayEngine;
+
     public VersioningService(TemporalEngine temporalEngine,
                              ConflictEngine conflictEngine,
-                             ConflictResolver conflictResolver) {
+                             ConflictResolver conflictResolver,
+                             ReplayEngine replayEngine) {
         this.temporalEngine = temporalEngine;
         this.conflictEngine = conflictEngine;
         this.conflictResolver = conflictResolver;
+        this.replayEngine = replayEngine;
     }
+
+
 
     @Transactional(isolation = Isolation.REPEATABLE_READ,
             noRollbackFor = ConflictDetectedException.class)
@@ -105,5 +113,16 @@ public class VersioningService {
     @Transactional(readOnly = true)
     public ConflictRecord loadConflict(String conflictId) {
         return conflictEngine.loadConflict(conflictId);
+    }
+
+
+    @Transactional(readOnly = true)
+    public ReplayResult replay(String entityId, Instant from, Instant to) {
+        return replayEngine.replay(entityId, from, to);
+    }
+
+    @Transactional(readOnly = true)
+    public ReplayResult replayAll(String entityId) {
+        return replayEngine.replayAll(entityId);
     }
 }

@@ -7,6 +7,8 @@ import com.chronosdb.engine.conflict.resolution.FieldMergeStrategy;
 import com.chronosdb.engine.conflict.resolution.LastWriteWinsStrategy;
 import com.chronosdb.engine.conflict.resolution.PriorityBasedStrategy;
 import com.chronosdb.engine.conflict.resolution.ResolutionStrategyRegistry;
+import com.chronosdb.engine.replay.JsonDiffEngine;
+import com.chronosdb.engine.replay.ReplayEngine;
 import com.chronosdb.engine.temporal.ChecksumService;
 import com.chronosdb.engine.temporal.DagService;
 import com.chronosdb.engine.temporal.TemporalEngine;
@@ -69,5 +71,17 @@ public class EngineConfig {
                                              VersionRepository versionRepository,
                                              ResolutionStrategyRegistry registry) {
         return new ConflictResolver(conflictEngine, temporalEngine, versionRepository, registry);
+    }
+
+
+    @Bean
+    public JsonDiffEngine jsonDiffEngine() {
+        return new JsonDiffEngine();
+    }
+
+    @Bean
+    public ReplayEngine replayEngine(VersionRepository versionRepository,
+                                     JsonDiffEngine jsonDiffEngine) {
+        return new ReplayEngine(versionRepository, jsonDiffEngine);
     }
 }
